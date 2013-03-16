@@ -1,0 +1,8 @@
+secret_key.py
+.DS_Store
+*.pyc
+*.pyo
+*.sqlite3
+tmp/*
+_media
+_static
