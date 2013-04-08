@@ -1,4 +1,4 @@
-secret_key.py
+webapp/secret_key.py
 .DS_Store
 *.pyc
 *.pyo
@@ -6,3 +6,4 @@ secret_key.py
 tmp/*
 _media
 _static
+conf.py
