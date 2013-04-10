@@ -6,4 +6,4 @@ webapp/secret_key.py
 tmp/*
 _media
 _static
-conf.py
+/conf.py
