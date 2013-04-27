@@ -71,10 +71,10 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'plumgarage_controller.urls'
+ROOT_URLCONF = 'webapp.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'plumgarage_controller.wsgi.application'
+WSGI_APPLICATION = 'webapp.wsgi.application'
 
 TEMPLATE_DIRS = [ os.path.join(PROJECT_ROOT, 'templates') ]
 

@@ -155,7 +155,7 @@ class ExtendedColorLight:
 
         self.last_status_time = datetime.datetime.now()
 
-    def set_state(self, state):
+    def set_state(self, **state):
         self.hue.request(
             path="/lights/%s/state" % self.light_id,
             method="PUT",
@@ -164,24 +164,34 @@ class ExtendedColorLight:
         return self
 
     def on(self, transitiontime=5):
-        return self.set_state({"on": True, "transitiontime": transitiontime})
+        transitiontime = int(transitiontime)
+        return self.set_state(**{"on": True, "transitiontime": transitiontime})
 
     def off(self, transitiontime=5):
-        return self.set_state({"on": False, "transitiontime": transitiontime})
+        transitiontime = int(transitiontime)
+        return self.set_state(**{"on": False, "transitiontime": transitiontime})
 
     def ct(self, ct, transitiontime=5):
+        ct = int(ct)
+        transitiontime = int(transitiontime)
         # set color temp in mired scale
-        return self.set_state({"ct": ct, "transitiontime": transitiontime})
+        return self.set_state(**{"ct": ct, "transitiontime": transitiontime})
 
     def cct(self, cct, transitiontime=5):
+        cct = int(cct)
+        transitiontime = int(transitiontime)
         # set color temp in degrees kelvin
         return self.ct(1000000 / cct, transitiontime)
 
     def bri(self, level, transitiontime=5):
         # level between 0 and 255
-        return self.set_state({"bri": level, "transitiontime": transitiontime})
+        level = int(level)
+        transitiontime = int(transitiontime)
+        return self.set_state(**{"bri": level, "transitiontime": transitiontime})
 
     def toggle(self, transitiontime=5):
+        transitiontime = int(transitiontime)
+
         self.update_state_cache()
         if self.state and self.state.get(
                 'state', None) and self.state["state"].get("on", None):
@@ -190,18 +200,19 @@ class ExtendedColorLight:
             self.on(transitiontime)
 
     def alert(self, type="select"):
-        return self.set_state({"alert": type})
+        return self.set_state(**{"alert": type})
 
     def xy(self, x, y, transitiontime=5):
+        x = int(x)
+        y = int(y)
+        transitiontime = int(transitiontime)
         return self.set_state({"xy": [x, y], "transitiontime": transitiontime})
 
-    def rgb(self, red, green=None, blue=None, transitiontime=5):
-        if isinstance(red, basestring):
-            # assume a hex string is passed
-            rstring = red
-            red = int(rstring[1:3], 16)
-            green = int(rstring[3:5], 16)
-            blue = int(rstring[5:], 16)
+    def rgb(self, red, green, blue, transitiontime=5):
+        red = int(red)
+        blue = int(blue)
+        green = int(green)
+        transitiontime = int(transitiontime)
 
         # We need to convert the RGB value to Yxy.
         redScale = float(red) / 255.0
@@ -220,4 +231,12 @@ class ExtendedColorLight:
         logger.debug(xyz)
 
         return self.set_state(
-            {"xy": [xyz[0], xyz[1]], "transitiontime": transitiontime})
+            **{"xy": [xyz[0], xyz[1]], "transitiontime": transitiontime})
+
+    def hex(self, string, transitiontime=5):
+        # assume a hex string is passed, 6 characters
+        red = int(string[0:2], 16)
+        green = int(string[2:4], 16)
+        blue = int(string[4:6], 16)
+
+        return self.rgb(red, green, blue)

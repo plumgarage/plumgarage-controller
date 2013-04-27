@@ -42,4 +42,7 @@ urlpatterns = patterns('plumgarage_controller.views',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
             'document_root': settings.MEDIA_ROOT,
     }),
+) + patterns('devices.hue.views',
+    url('hue/trigger/(?P<action>[\w\_]+)', 'trigger'),
+    url('hue/light/(?P<light>[l\d]+)/trigger/(?P<action>[\w\_]+)', 'trigger_light'),
 )

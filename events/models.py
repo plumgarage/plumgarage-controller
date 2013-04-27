@@ -2,7 +2,8 @@ from schematics.models import Model
 from persist import PersistMixin
 from schematics.types.compound import ListType
 from schematics.types.base import StringType
-from importlib import import_module
+import requests
+
 
 class Event(Model, PersistMixin):
     slug = ''
@@ -10,9 +11,8 @@ class Event(Model, PersistMixin):
 
     name = StringType()
     description = StringType()
-    listeners = ListType(StringType()) ## List of celery tasks to call
+    listeners = ListType(StringType())
 
-    def call_listeners(self, *args, **kwargs):
-        for module in self.listeners:
-            listener = import_module(module)
-            listener.delay(*args, **kwargs)
+    def trigger(self, *args, **kwargs):
+        for url in self.listeners:
+            requests.get(url, data=kwargs)

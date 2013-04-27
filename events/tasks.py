@@ -1,8 +1,7 @@
-from celery import task
 from .models import Event
 from persist.exceptions import DoesNotExist
 
-@task
+
 def trigger_event(event_slug, *args, **kwargs):
     """
     Process a fired event, Trigger any registered event handlers
@@ -27,5 +26,5 @@ def trigger_event(event_slug, *args, **kwargs):
             continue
         # Lookup which things are registered to this event type/device
         # Call those tasks
-        event.call_listeners(*args, **kwargs)
+        event.trigger(*args, **kwargs)
 

@@ -1,3 +1,2 @@
 django>=1.5<1.6
-celery
 -e git+https://github.com/j2labs/schematics.git#egg=schematics
