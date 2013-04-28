@@ -1,40 +1,11 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 from django.conf import settings
-
-"""
-GET /device-types
-
-GET /devices
-POST /devices
-
-GET /devices/events
-POST /devices/events
-
-# This is for bypassing the event/recipe system, and triggering
-# actions directly
-POST /devices/actions
-
-GET /recipes
-POST /recipes
-
-GET /status
-"""
+from importlib import import_module
+import os.path
+import os
 
 
 urlpatterns = patterns('plumgarage_controller.views',
-
-    url('device-types', 'device-types'),
-    url('device-types/(?P<slug>[\w]+)', 'device-type-detail'),
-
-    url('devices', 'devices'),
-    url('devices/events', 'events'),
-    url('devices/actions', 'actions'),
-
-    url('recipes', 'recipes'),
-
-    url('status', 'status'),
-
-
     # Nginx config should override this in most production circumstances.
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {
             'document_root': settings.STATIC_ROOT,
@@ -42,7 +13,14 @@ urlpatterns = patterns('plumgarage_controller.views',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
             'document_root': settings.MEDIA_ROOT,
     }),
-) + patterns('devices.hue.views',
-    url('hue/trigger/(?P<action>[\w\_]+)', 'trigger'),
-    url('hue/light/(?P<light>[l\d]+)/trigger/(?P<action>[\w\_]+)', 'trigger_light'),
 )
+
+
+DEVICE_DIR = os.path.join(settings.PROJECT_ROOT, 'devices')
+
+for name in os.listdir(DEVICE_DIR):
+    if os.path.isdir(os.path.join(DEVICE_DIR, name)):
+        urlconf_module = 'devices.%s.urls' % name
+        urlconf_module = import_module(urlconf_module)
+        patterns = getattr(urlconf_module, 'urlpatterns', urlconf_module)
+        urlpatterns += patterns
