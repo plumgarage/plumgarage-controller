@@ -23,11 +23,10 @@ class TooManyFailures(Exception):
 class CouldNotAuthenticate(Exception):
     pass
 
-class Hue(BaseDevice):
+class Device(BaseDevice):
     type_slug = 'hue'
     slug = 'singleton'
     type_description = "The Philips Hue Base station"
-
 
     station_ip = StringType()
 
@@ -46,6 +45,13 @@ class Hue(BaseDevice):
     schedules = DictType()
     config = DictType()
 
+    def __init__(self, *args, **kwargs):
+        super(Device, self).__init__(*args, **kwargs)
+        if not self.station_ip:
+            resp = requests.get('https://www.meethue.com/api/nupnp')
+            self.station_ip = resp[0]['internalipaddress']
+            self.save()
+
     def request(self, *args, **kwargs):
         path = "http://%s/api/%s%s" % (
             self.station_ip,
@@ -57,8 +63,9 @@ class Hue(BaseDevice):
 
         ## Needs more error checking, currently assumes connection will work
         ## and that returns proper json.
+        print method, path, data
         resp = requests.request(method, path, data=data)
-
+        print resp.content
         logger.debug(resp)
         logger.debug(resp.content)
 
@@ -130,6 +137,19 @@ class Hue(BaseDevice):
 
         self.last_update_state = datetime.datetime.now()
 
+    def set_light_state(self, light='l1', **state):
+        if not self.lights:
+            self.get_state()
+
+        if state.get('on', None):
+            state['on'] = True if state['on'].lower()[0] == 't' else False
+
+        if state.get('bri', None):
+            state['bri'] = int(state['bri'])
+
+
+        return self.lights[light].set_state(**state)
+
 
 class ExtendedColorLight:
     type_slug = 'hue_bulb'
@@ -156,12 +176,12 @@ class ExtendedColorLight:
         self.last_status_time = datetime.datetime.now()
 
     def set_state(self, **state):
-        self.hue.request(
+        resp = self.hue.request(
             path="/lights/%s/state" % self.light_id,
             method="PUT",
             data=json.dumps(state))
         self.update_state_cache()
-        return self
+        return resp
 
     def on(self, transitiontime=5):
         transitiontime = int(transitiontime)
